@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HPE</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+    function processImage() {
+        // **********************************************
+        // *** Update or verify the following values. ***
+        // **********************************************
+        let subscriptionKey = '311f1f094d764be3bf130ae2aa029aca';
+        let endpoint = 'https://human-posture-estimator.cognitiveservices.azure.com/customvision/v3.0/Prediction/599e9897-6ccc-4b4c-ae03-9d91fe48465e/classify/iterations/HPEModel/url';
+        if (!subscriptionKey) { throw new Error('Set your environment variables for your subscription key and endpoint.'); }
+
+        // Display the image.
+        var sourceImageUrl = document.getElementById("inputImage").value;
+        //document.src = sourceImageUrl;
+        document.querySelector("#sourceImage").src = sourceImageUrl;
+        // Make the REST API call.
+        $.ajax({
+            url: endpoint + "?",
+            // Request headers.
+            beforeSend: function(xhrObj){
+                xhrObj.setRequestHeader("Content-Type","application/json");
+                xhrObj.setRequestHeader("Prediction-Key", subscriptionKey);
+            },
+            type: "POST",
+            // Request body.
+            data: '{"url": ' + '"' + sourceImageUrl + '"}',
+        })
+        .done(function(data) {
+            // Show formatted JSON on webpage.
+            var a = JSON.stringify(data,["predictions","tagName"]);
+            $("#responseTextArea").val("We have analyzed and image provided seems to suggest a "+a.split('"')[5]);
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            // Display error message.
+            var errorString = (errorThrown === "") ? "Error. " :
+                errorThrown + " (" + jqXHR.status + "): ";
+            errorString += (jqXHR.responseText === "") ? "" :
+                jQuery.parseJSON(jqXHR.responseText).message;
+            alert(errorString);
+        });
+    };
+</script>
+<h1 style="background-color:powderblue;text-align:center">Human Posture Estimator</h1>
+Enter the image URL, then click the <strong>Analyze posture</strong> button.
+<br><br>
+Image to analyze:
+<input type="text" name="inputImage" id="inputImage"/>
+<button onclick="processImage()">Analyze posture</button>
+<br><br>
+<div id="wrapper" style="width:1020px; display:table;">
+    <div id="jsonOutput" style="width:600px; display:table-cell;">
+        Response:
+        <br><br>
+        <textarea id="responseTextArea" class="UIInput"
+                  style="width:580px; height:250px;"></textarea>
+    </div>
+    <div id="imageDiv" style="width:420px; display:table-cell;">
+        Source image:
+        <br><br>
+        <img id="sourceImage" width="400" />
+    </div>
+</div>
+</body>
+</html>
